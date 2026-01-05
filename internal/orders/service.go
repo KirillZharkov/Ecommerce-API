@@ -11,7 +11,7 @@ import (
 
 var (
 	ErrProductNotFound = errors.New("product not found")
-	ErrProductNoStock  = errors.New("prduct has not enough stock")
+	ErrProductNoStock  = errors.New("product has not enough stock")
 )
 
 type svc struct {
@@ -52,7 +52,18 @@ func (s *svc) PlaceOrder(ctx context.Context, tempOrder createOrderParams) (repo
 		if err != nil {
 			return repo.Order{}, ErrProductNotFound
 		}
-		if product.Quantity < item.Quantity {
+		// if product.Quantity < item.Quantity {
+		// 	return repo.Order{}, ErrProductNoStock
+		// }
+		//Обновите количество товара на складе
+		rows, err := qtx.UpdateProductQuantity(ctx, repo.UpdateProductQuantityParams{
+			ID:       item.ProductId,
+			Quantity: item.Quantity, // количество для вычитания
+		})
+		if err != nil {
+			return repo.Order{}, fmt.Errorf("failed to update product quantity: %w", err)
+		}
+		if rows == 0 {
 			return repo.Order{}, ErrProductNoStock
 		}
 		//пишем заказ в бд
@@ -66,6 +77,8 @@ func (s *svc) PlaceOrder(ctx context.Context, tempOrder createOrderParams) (repo
 			return repo.Order{}, err
 		}
 	}
-	tx.Commit(ctx)
+	if err := tx.Commit(ctx); err != nil {
+		return repo.Order{}, err
+	}
 	return order, nil
 }

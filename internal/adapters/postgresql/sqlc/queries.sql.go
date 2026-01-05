@@ -10,9 +10,12 @@ import (
 )
 
 const createOrder = `-- name: CreateOrder :one
+
 INSERT INTO orders (customer_id) VALUES ($1) RETURNING id, customer_id, created_at
 `
 
+// Входные данные: customer_id = 42
+// Выходные данные: {id: 1, customer_id: 42, created_at: '2024-01-15 10:30:00'}
 func (q *Queries) CreateOrder(ctx context.Context, customerID int64) (Order, error) {
 	row := q.db.QueryRow(ctx, createOrder, customerID)
 	var i Order
@@ -94,4 +97,23 @@ func (q *Queries) ListProducts(ctx context.Context) ([]Product, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateProductQuantity = `-- name: UpdateProductQuantity :execrows
+UPDATE products
+SET quantity = quantity - $1
+WHERE id = $2 AND quantity >= $1
+`
+
+type UpdateProductQuantityParams struct {
+	Quantity int32 `json:"quantity"`
+	ID       int64 `json:"id"`
+}
+
+func (q *Queries) UpdateProductQuantity(ctx context.Context, arg UpdateProductQuantityParams) (int64, error) {
+	result, err := q.db.Exec(ctx, updateProductQuantity, arg.Quantity, arg.ID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }

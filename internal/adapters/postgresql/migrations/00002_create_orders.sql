@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS order_items(
     product_id BIGINT NOT NULL,
     quantity INTEGER NOT NULL,
     price_cents INTEGER NOT NULL,
+    --fk_order гарантирует, что order_id ссылается на существующий заказ в таблице orders
     CONSTRAINT fk_order FOREIGN KEY (order_id) REFERENCES orders(id)
 );
 -- +goose StatementEnd
