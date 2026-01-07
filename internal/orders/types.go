@@ -16,7 +16,7 @@ type createOrderParams struct {
 	Items      []orderItem `json:"items"`
 }
 
-
 type Service interface {
 	PlaceOrder(ctx context.Context, tempOrder createOrderParams) (repo.Order, error)
+	FindOrderByID(ctx context.Context, id int64) (repo.Order, error)
 }

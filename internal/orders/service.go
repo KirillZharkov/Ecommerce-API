@@ -82,3 +82,7 @@ func (s *svc) PlaceOrder(ctx context.Context, tempOrder createOrderParams) (repo
 	}
 	return order, nil
 }
+
+func (s *svc) FindOrderByID(ctx context.Context, id int64) (repo.Order, error) {
+	return s.repo.FindOrdersByID(ctx, id)
+}

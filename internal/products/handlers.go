@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	repo "github.com/KirillZharkov/Ecommerce-API/internal/adapters/postgresql/sqlc"
 	"github.com/KirillZharkov/Ecommerce-API/internal/json"
 	"github.com/go-chi/chi/v5"
 )
@@ -17,6 +18,31 @@ func NewHandler(service Service) *Handler {
 	return &Handler{
 		service: service,
 	}
+}
+
+// обработчик списка твоаров
+func (h *Handler) PlaceProduct(w http.ResponseWriter, r *http.Request) {
+	var tempOrder createProductsParams
+	if err := json.Read(r, &tempOrder); err != nil {
+		log.Println(err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	createdOrder, err := h.service.PlaceProduct(r.Context(), repo.CreateProductParams{
+		ID:           tempOrder.ID,
+		Name:         tempOrder.Name,
+		PriceInCents: int32(tempOrder.PriceInCents),
+		Quantity:     tempOrder.Quantity})
+	if err != nil {
+		log.Println(err)
+		if err == ErrProductNotFound {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	json.Write(w, http.StatusCreated, createdOrder)
 }
 
 // обработчик списка твоаров

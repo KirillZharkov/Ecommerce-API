@@ -13,6 +13,8 @@ type Querier interface {
 	// Выходные данные: {id: 1, customer_id: 42, created_at: '2024-01-15 10:30:00'}
 	CreateOrder(ctx context.Context, customerID int64) (Order, error)
 	CreateOrderItem(ctx context.Context, arg CreateOrderItemParams) (OrderItem, error)
+	CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error)
+	FindOrdersByID(ctx context.Context, id int64) (Order, error)
 	FindPoductsByID(ctx context.Context, id int64) (Product, error)
 	ListProducts(ctx context.Context) ([]Product, error)
 	UpdateProductQuantity(ctx context.Context, arg UpdateProductQuantityParams) (int64, error)

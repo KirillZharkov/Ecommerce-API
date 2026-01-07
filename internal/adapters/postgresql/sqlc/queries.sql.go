@@ -52,6 +52,46 @@ func (q *Queries) CreateOrderItem(ctx context.Context, arg CreateOrderItemParams
 	return i, err
 }
 
+const createProduct = `-- name: CreateProduct :one
+INSERT INTO products (id, name, price_in_cents, quantity) VALUES ($1, $2, $3, $4) RETURNING id, name, price_in_cents, quantity, created_at
+`
+
+type CreateProductParams struct {
+	ID           int64  `json:"id"`
+	Name         string `json:"name"`
+	PriceInCents int32  `json:"price_in_cents"`
+	Quantity     int32  `json:"quantity"`
+}
+
+func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error) {
+	row := q.db.QueryRow(ctx, createProduct,
+		arg.ID,
+		arg.Name,
+		arg.PriceInCents,
+		arg.Quantity,
+	)
+	var i Product
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.PriceInCents,
+		&i.Quantity,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const findOrdersByID = `-- name: FindOrdersByID :one
+SELECT id, customer_id, created_at FROM orders WHERE id = $1
+`
+
+func (q *Queries) FindOrdersByID(ctx context.Context, id int64) (Order, error) {
+	row := q.db.QueryRow(ctx, findOrdersByID, id)
+	var i Order
+	err := row.Scan(&i.ID, &i.CustomerID, &i.CreatedAt)
+	return i, err
+}
+
 const findPoductsByID = `-- name: FindPoductsByID :one
 SELECT id, name, price_in_cents, quantity, created_at FROM products WHERE id = $1
 `

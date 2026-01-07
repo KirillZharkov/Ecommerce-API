@@ -16,3 +16,10 @@ INSERT INTO order_items (order_id, product_id, quantity, price_cents) VALUES ($1
 UPDATE products
 SET quantity = quantity - $1
 WHERE id = $2 AND quantity >= $1;
+
+-- name: FindOrdersByID :one
+SELECT * FROM orders WHERE id = $1;
+
+-- name: CreateProduct :one
+INSERT INTO products (id, name, price_in_cents, quantity) VALUES ($1, $2, $3, $4) RETURNING *;
+

@@ -41,16 +41,16 @@ func (app *API) mount() http.Handler {
 		w.Write([]byte("all good"))
 	})
 
-	productService := products.NewService(repo.New(app.db))
+	productService := products.NewService(repo.New(app.db), app.db)
 	productHandler := products.NewHandler(productService)
-
 	router.Get("/products", productHandler.ListProducts)
 	router.Get("/products/{id}", productHandler.FindPoductsByID)
+	router.Post("/product", productHandler.PlaceProduct)
 
 	orderServise := orders.NewService(repo.New(app.db), app.db)
 	ordersHandler := orders.NewHandler(orderServise)
-
 	router.Post("/orders", ordersHandler.PlaceOrder)
+	router.Get("/orders/{id}", ordersHandler.FindOrderByID) //доделать с item
 
 	return router
 }
